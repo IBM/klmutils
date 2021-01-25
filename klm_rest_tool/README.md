@@ -1,0 +1,1 @@
+The Python script provides functions to query GKLM and SKLM servers via REST API. Depending on the type of the deployed architecture (Standalone, Multi-Master or Master-Clone) different kind of API endpoints are queried and the responses are evaluated.
