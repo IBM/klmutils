@@ -3,7 +3,7 @@
 ################################################################################
 # The MIT License (MIT)                                                        #
 #                                                                              #
-# Copyright (c) 2021 Daniel Wendler                          				   #
+# Copyright (c) 2021 Daniel Wendler                                            #
 #                                                                              #
 # Permission is hereby granted, free of charge, to any person obtaining a copy #
 # of this software and associated documentation files (the "Software"), to deal#
@@ -26,15 +26,15 @@
 
 
 ################################################################################
-# Name:		IBM Security Guardium Key Lifecycle Manager NRPE plugin            #
+# Name:     IBM Security Guardium Key Lifecycle Manager NRPE plugin            #
 #                                                                              #
-# Author: 	Daniel Wendler - daniel(dot)wendler(at)de.ibm.com                  #
+# Author:   Daniel Wendler - daniel(dot)wendler(at)de.ibm.com                  #
 #                                                                              #
-# Contributor:	                                                               #
+# Contributor:                                                                 #
 #                                                                              #
-TOOL_VERSION="0.57"                                                       
+TOOL_VERSION="0.58"                                                            #
 #                                                                              #
-# Dependencies:	                                                               #
+# Dependencies:                                                                #
 #   - Python, lsof, curl                                                       #
 #                                                                              #
 # Github Repository:                                                           #
@@ -45,7 +45,7 @@ TOOL_VERSION="0.57"
 ################################################################################
 
 ################################################################################
-# This bash script checks various aspects of an IBM Security Guardium Key      #
+# This bash script checks various aspects of IBM Security Guardium Key         #
 # Lifecycle Manager instances.                                                 #
 # It verifies the state of middleware components such as WebSphere Application #
 # server, the DB2 instance and if backup needs to be taken because new         # 
@@ -57,7 +57,7 @@ TOOL_VERSION="0.57"
 # The actual code is managed in the following Git repository - please use the  #
 # Issue Tracker to ask questions, report problems or request enhancements. The #
 # repository also contains examples.                                           #
-
+#                                                                              #
 # Disclaimer: This sample is provided 'as is', without any warranty or support.#
 # It is provided solely for demonstrative purposes - the end user must test and#
 # modify this sample to suit his or her particular environment. This code is   #
@@ -131,13 +131,13 @@ function error_usage
    usage: \t$0 [ -a | -b | -f | -l | -p | -r | -h ]\n
    \n
    syntax:\n
-   \t	-a	\t--> Run ALL checks, identical to no parameter\n
-   \t	-b	\t--> Verify if BACKUP is needed\n
+   \t   -a  \t--> Run ALL checks, identical to no parameter\n
+   \t   -b  \t--> Verify if BACKUP is needed\n
    \t   -f  \t--> Verify FILESYSTEM usage\n
    \t   -l  \t--> Verify TCP port LISTERNER states\n
-   \t	-p  \t--> Verify that required PROCESSES (WAS, DB2) are running\n
-   \t	-r  \t--> check REST API for health status (only KLM 4.0\n
-   \t	-h	\t--> Print This Help Screen\n
+   \t   -p  \t--> Verify that required PROCESSES (WAS, DB2) are running\n
+   \t   -r  \t--> check REST API for health status (only KLM 4.0\n
+   \t   -h  \t--> Print This Help Screen\n
   "
   echo -e $HELP
 
@@ -153,35 +153,34 @@ function check_isBackupNeeded
      func_rc=2
      return $func_rc
    fi
-	
+    
    
     if [[ (-v KLM_MONITOR_USERNAME ) && ( -v KLM_MONITOR_USERCRED) ]];
     then
-  	   cmd_msg=`$WSADMIN_TOOL -username $KLM_MONITOR_USERNAME -password $KLM_MONITOR_USERCRED -lang jython -c '"print AdminTask.tklmBackupIsNeeded()"'`
+       cmd_msg=`$WSADMIN_TOOL -username $KLM_MONITOR_USERNAME -password $KLM_MONITOR_USERCRED -lang jython -c '"print AdminTask.tklmBackupIsNeeded()"'`
        cmd_rc=$?
        cmd2_msg=`printf "$cmd_msg" | grep -e CTGKM0002E -e CTGKM1304I -e ADMN0022E -e CTGKM1305I -e WASX7246E`
        cmd2_rc=$?
- 	  if (( $cmd_rc !=0 )); then
- 	    print_line 2 "$cmd2_msg"
- 		func_rc=2
- 		return 2
- 	  else
- 	    if [[ $cmd2_msg =~ "CTGKM1304I" ]]; then
- 	       print_line 0 "$cmd2_msg"
- 		elif [[ $cmd2_msg =~ "CTGKM1305I" ]]; then
- 		   print_line 1 "$cmd2_msg"
-		   if (( $func_rc < 1 )); then func_rc=1; fi
-		   return $func_rc
- 		else 
- 		   print_line 2 "$cmd2_msg"
-		   func_rc=2
-		   return $func_rc
- 		fi
- 	  fi
- 	  
+      if (( $cmd_rc !=0 )); then
+        print_line 2 "$cmd2_msg"
+        func_rc=2
+        return 2
+      else
+        if [[ $cmd2_msg =~ "CTGKM1304I" ]]; then
+           print_line 0 "$cmd2_msg"
+        elif [[ $cmd2_msg =~ "CTGKM1305I" ]]; then
+           print_line 1 "$cmd2_msg"
+           if (( $func_rc < 1 )); then func_rc=1; fi
+           return $func_rc
+        else 
+           print_line 2 "$cmd2_msg"
+           func_rc=2
+           return $func_rc
+        fi
+      fi
+      
     else
-      print_line 1 "monitor user credentials not defined"
- 	  if (( $func_rc < 1 )); then func_rc=1; fi
+      print_line 0 "monitor user credentials not defined - not running check"
     fi
     
     return $func_rc
@@ -197,7 +196,6 @@ function check_filesystems
 
 
    filesystemList=( "/opt/IBM/WebSphere" "/tmp"  )
-   #filesystemList+=("/boot")  # only for testing of error code level
 
    #note: missing $ below is not an error, evaluating if variable is set... 
    if [[ -v DB2_INSTANCE_HOME ]];
@@ -213,7 +211,7 @@ function check_filesystems
       then 
          cmd_msg=`printf "$cmd_msg" | awk 'NR==2 {print}'`
          cmd_rc=$?
-		 freeSpaceGB=$(($cmd_msg / 1024 / 1024))
+         freeSpaceGB=$(($cmd_msg / 1024 / 1024))
          if (( $cmd_msg < $FILESYSTEM_FREE_KB_ERROR)) ;
          then 
              print_line 2 "filesystem $filesystem has less than $FILESYSTEM_FREE_GB_ERROR GB free space: $freeSpaceGB GB"
@@ -221,11 +219,11 @@ function check_filesystems
 
          elif (( $cmd_msg < $FILESYSTEM_FREE_KB_WARN)) ;
          then
-	     print_line 1 "filesystem $filesystem has less than $FILESYSTEM_FREE_GB_WARN GB free space: $freeSpaceGB GB"
+         print_line 1 "filesystem $filesystem has less than $FILESYSTEM_FREE_GB_WARN GB free space: $freeSpaceGB GB"
              if (( $func_rc < 1 )); then func_rc=1; fi
          elif (( $cmd_msg > $FILESYSTEM_FREE_KB_WARN)) ;
          then
-	     print_line 0 "filesystem $filesystem has more than $FILESYSTEM_FREE_GB_WARN GB free space: $freeSpaceGB GB"
+         print_line 0 "filesystem $filesystem has more than $FILESYSTEM_FREE_GB_WARN GB free space: $freeSpaceGB GB"
          fi
       else
           print_line 1 "filesystem $filesystem can not be evaluated - df error"
@@ -448,12 +446,12 @@ function check_ports
       cmd_msg=$(lsof_helper $port)
       cmd_rc=$?
       if (( $cmd_rc == 0 )); then
-	 replicationPortCount=$((replicationPortCount + 1))
+     replicationPortCount=$((replicationPortCount + 1))
          print_line 0 $msgTxt "OK"
       fi
 
       if (( $replicationPortCount != 1 )); then
-	     print_line 1 "exactly one Replication port should be listening (master: $REPLICATION_MASTER_PORT, clone: $REPLICATION_CLONE_PORT)"
+         print_line 1 "exactly one Replication port should be listening (master: $REPLICATION_MASTER_PORT, clone: $REPLICATION_CLONE_PORT)"
          if (( $func_rc < 1 )); then func_rc=1; fi
 
       fi
@@ -544,79 +542,79 @@ fi
 
 case "$opt" in
    "-a")  echo
-		  echo
-		  printf "%-29s %s\n" "utility name: " $0
-		  printf "%-29s %s\n" "utility version:"  $TOOL_VERSION
-		  printf "%-29s %s\n" "checking agains KLM version:" $KLM_VERSION
-		  printf "%-29s %s\n" "using config file:" $DEF_FILE_NAME
-		  echo
-		  
-	      # check REST API status
-		  check_api_status
+          echo
+          printf "%-29s %s\n" "utility name: " $0
+          printf "%-29s %s\n" "utility version:"  $TOOL_VERSION
+          printf "%-29s %s\n" "checking agains KLM version:" $KLM_VERSION
+          printf "%-29s %s\n" "using config file:" $DEF_FILE_NAME
+          echo
+          
+          # check REST API status
+          check_api_status
           func_rc=$?
           if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
-		  
-		  # check filesystem utilisation
-		  check_filesystems
-		  func_rc=$?
-		  if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
-		  
-		  # check listener ports
-		  check_ports
-		  func_rc=$?
-		  if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi		  
-		  
-		  # check running processes
-		  check_processes
-		  func_rc=$?
-		  if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
+          
+          # check filesystem utilisation
+          check_filesystems
+          func_rc=$?
+          if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
+          
+          # check listener ports
+          check_ports
+          func_rc=$?
+          if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi         
+          
+          # check running processes
+          check_processes
+          func_rc=$?
+          if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
 
-		  # check if backup is needed
-		  check_isBackupNeeded
-		  func_rc=$?
-		  if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
-		  
-		  print_line $exit_rc highest returncode
-		  ;;
-		  
-   "-r")  # check REST API status
-		  check_api_status
+          # check if backup is needed
+          check_isBackupNeeded
           func_rc=$?
           if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
-		  ;;
-		  
+          
+          print_line $exit_rc highest returncode
+          ;;
+          
+   "-r")  # check REST API status
+          check_api_status
+          func_rc=$?
+          if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
+          ;;
+          
    "-f")  # check filesystem utilisation
-		  check_filesystems
-		  func_rc=$?
-		  if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
-		  ;;
+          check_filesystems
+          func_rc=$?
+          if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
+          ;;
    
    "-l")  # check listener ports
-		  check_ports
-		  func_rc=$?
-		  if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
-		  ;;
+          check_ports
+          func_rc=$?
+          if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
+          ;;
 
    "-p")  # check running processes
-		  check_processes
-		  func_rc=$?
-		  if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
-		  ;;
-		
+          check_processes
+          func_rc=$?
+          if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
+          ;;
+        
 
    "-b")  # check if backup is needed
-		  check_isBackupNeeded
-		  func_rc=$?
-		  if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
-		  ;;		
+          check_isBackupNeeded
+          func_rc=$?
+          if (( $func_rc > $exit_rc )); then exit_rc=$func_rc; fi
+          ;;        
    "-h")  error_usage
-		  exit_rc=2
-		  ;;
-		  
-   *)  	  error_usage
-		  print_line 2 "wrong command line parameters" 
-		  exit_rc=2
-	      ;;
+          exit_rc=2
+          ;;
+          
+   *)     error_usage
+          print_line 2 "wrong command line parameters" 
+          exit_rc=2
+          ;;
 esac
 
 
