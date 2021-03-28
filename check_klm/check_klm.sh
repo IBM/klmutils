@@ -32,7 +32,7 @@
 #                                                                              #
 # Contributor:                                                                 #
 #                                                                              #
-TOOL_VERSION="0.58"                                                            #
+TOOL_VERSION="0.60"                                                            #
 #                                                                              #
 # Dependencies:                                                                #
 #   - Python, lsof, curl                                                       #
@@ -85,6 +85,8 @@ else
    exit 2
 fi
 
+# ====================================================
+# BEGIN OF variable declaration ======================
 
 # define REST API port and endpoint. Note that only SKLM 4.0 supports this query
 REST_API_ADDRESS="localhost:9443"
@@ -98,11 +100,15 @@ PS_TOOL="/usr/bin/ps"
 LSOF_TOOL="/usr/sbin/lsof"
 WSADMIN_TOOL="/opt/IBM/WebSphere/AppServer/bin/wsadmin.sh"
 
-
-# define thresholds if free space before evaluating the free space as warning / error, value in GB
-FILESYSTEM_FREE_GB_WARN=4    # less than ~ GB free space triggers warnings, in GB, e.g. 4 = 4GB
-FILESYSTEM_FREE_GB_ERROR=1   # less than ~ GB free space triggers error, in GB, e.g. 1 = 1GB
+# default return code
 exit_rc=0
+
+
+# enter filesystems which shall be observed for free space, no delimiter needed
+filesystemList=( "/opt/IBM/WebSphere" "/tmp"  )
+
+# END definitions ====================================
+# ====================================================
 
 
 # custom println function
@@ -136,7 +142,7 @@ function error_usage
    \t   -f  \t--> Verify FILESYSTEM usage\n
    \t   -l  \t--> Verify TCP port LISTERNER states\n
    \t   -p  \t--> Verify that required PROCESSES (WAS, DB2) are running\n
-   \t   -r  \t--> check REST API for health status (only KLM 4.0\n
+   \t   -r  \t--> Check REST API for health status (only KLM 4.0)\n
    \t   -h  \t--> Print This Help Screen\n
   "
   echo -e $HELP
@@ -195,8 +201,6 @@ function check_filesystems
    FILESYSTEM_FREE_KB_ERROR=$(( $FILESYSTEM_FREE_GB_ERROR * 1024 * 1024 ))
 
 
-   filesystemList=( "/opt/IBM/WebSphere" "/tmp"  )
-
    #note: missing $ below is not an error, evaluating if variable is set... 
    if [[ -v DB2_INSTANCE_HOME ]];
    then
@@ -219,12 +223,12 @@ function check_filesystems
 
          elif (( $cmd_msg < $FILESYSTEM_FREE_KB_WARN)) ;
          then
-         print_line 1 "filesystem $filesystem has less than $FILESYSTEM_FREE_GB_WARN GB free space: $freeSpaceGB GB"
+             print_line 1 "filesystem $filesystem has less than $FILESYSTEM_FREE_GB_WARN GB free space: $freeSpaceGB GB"
              if (( $func_rc < 1 )); then func_rc=1; fi
          elif (( $cmd_msg > $FILESYSTEM_FREE_KB_WARN)) ;
-         then
-         print_line 0 "filesystem $filesystem has more than $FILESYSTEM_FREE_GB_WARN GB free space: $freeSpaceGB GB"
-         fi
+            then
+              print_line 0 "filesystem $filesystem has more than $FILESYSTEM_FREE_GB_WARN GB free space: $freeSpaceGB GB"
+        fi
       else
           print_line 1 "filesystem $filesystem can not be evaluated - df error"
           if (( $func_rc < 1 )); then func_rc=1; fi
@@ -257,7 +261,7 @@ function check_processes
    fi
  
 
-   # check for GKLM/SKLM agent (required for multi master, not for master clone
+   # check for GKLM/SKLM agent (required for multi master, not for master clone)
    
    if [ $IS_MULTIMASTER = true ]; then
 
@@ -442,7 +446,7 @@ function check_ports
       fi
 
       port=$REPLICATION_CLONE_PORT
-      msgTxt="Replication port $port (role clone "
+      msgTxt="Replication port $port (role clone) "
       cmd_msg=$(lsof_helper $port)
       cmd_rc=$?
       if (( $cmd_rc == 0 )); then

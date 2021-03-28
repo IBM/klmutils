@@ -25,5 +25,11 @@ DB2_INSTANCE_HOME="/home/sklmdb40"
 DB2_INSTANCE="sklmdb40"
 
 
-KLM_MONITOR_USERNAME="bakmon_user"
-KLM_MONITOR_USERCRED="mayPassword"
+#KLM_MONITOR_USERNAME="monitorUser"
+#KLM_MONITOR_USERCRED="myPassw0rd"
+
+
+# define thresholds of free space before evaluating the 
+# free space as warning / error, value in GB
+FILESYSTEM_FREE_GB_WARN=2    # less than ~ GB free space triggers warnings, in GB, e.g. 2 = 2GB
+FILESYSTEM_FREE_GB_ERROR=1   # less than ~ GB free space triggers error, in GB, e.g. 1 = 1GB

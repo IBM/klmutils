@@ -23,3 +23,10 @@ DB2_FCM_PORT=60050
 
 DB2_INSTANCE_HOME="/home/sklmdb31"
 DB2_INSTANCE="sklmdb31"
+
+
+
+# define thresholds of free space before evaluating the 
+# free space as warning / error, value in GB
+FILESYSTEM_FREE_GB_WARN=2    # less than ~ GB free space triggers warnings, in GB, e.g. 2 = 2GB
+FILESYSTEM_FREE_GB_ERROR=1   # less than ~ GB free space triggers error, in GB, e.g. 1 = 1GB
