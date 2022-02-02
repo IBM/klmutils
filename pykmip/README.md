@@ -68,6 +68,7 @@ suppress_ragged_eofs=True
 
 
 **Sample script result**
+> .\env\Scripts\activate
 > python3 testClient.py
 
 ``` 
