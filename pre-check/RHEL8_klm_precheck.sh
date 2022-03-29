@@ -381,7 +381,15 @@ echo getent passwd | grep -e klm -e klmfuser
 getent passwd | grep -e klm -e klmfuser
 echo
 echo
-
+echo ==========================================================================
+echo password policy
+echo ==========================================================================
+echo
+echo 'grep "^[^#;]" /etc/security/pwquality.conf'
+grep "^[^#;]" /etc/security/pwquality.conf
+echo
+echo 'grep "^[^#;]"  /etc/login.defs'
+grep "^[^#;]"  /etc/login.defs
 echo
 echo
 echo ==========================================================================
