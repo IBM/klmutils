@@ -230,7 +230,7 @@ echo checking mount point /tmp and /home for noexec and nosuid flag
 echo ==========================================================================
 echo
 #mount -o remount,exec /tmp
-mount | grep -e "/tmp" -e "/home"
+mount | grep -e "/tmp" -e "/home" -e "/opt" -e "/root"
 echo
 echo "in case noexec is set, remount tmp directory:"
 echo "command: mount -o remount,exec /tmp"
