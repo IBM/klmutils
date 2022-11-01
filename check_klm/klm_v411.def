@@ -1,0 +1,27 @@
+KLM_VERSION=411
+
+IS_MULTIMASTER=false
+IS_REPLICATION=true
+
+REPLICATION_MASTER_PORT=1111
+REPLICATION_CLONE_PORT=2222
+
+
+KLM_SSL_PORT=1441
+KLM_IPP_PORT=3801
+KLM_KMIP_PORT=5696
+KLM_HTTPS_PORT=9443
+KLM_AGENT_PORT=60015
+
+
+DB2_PORT=50080
+DB2_HADR_PORT=60029
+
+DB2_INSTANCE_HOME="/home/klmdb411"
+DB2_INSTANCE="klmdb411"
+
+
+# define thresholds of free space before evaluating the 
+# free space as warning / error, value in GB
+FILESYSTEM_FREE_GB_WARN=2    # less than ~ GB free space triggers warnings, in GB, e.g. 2 = 2GB
+FILESYSTEM_FREE_GB_ERROR=1   # less than ~ GB free space triggers error, in GB, e.g. 1 = 1GB
